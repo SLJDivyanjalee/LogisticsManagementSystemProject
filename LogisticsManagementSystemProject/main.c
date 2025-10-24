@@ -19,6 +19,7 @@ void leastCostRoute();
 void performanceReports();
 void saveData();
 
+
 //city management functions
 void addCity();
 void displayCities();
@@ -111,7 +112,9 @@ int main()
     initializeVehicles();
 
     mainMenu();
-    saveData();
+
+    saveData(); //saves data to a file
+
     return 0;
 }
 
@@ -1348,28 +1351,57 @@ void saveData() {
     }
 
     // Save cities
-    fprintf(file, "%d\n", cityCount);  //fprintf -> save all data to the file
+    fprintf(file, "City count : %d\n", cityCount);  //fprintf -> save all data to the file
+    fprintf(file, "Cities :\t");
     for (int i = 0; i < cityCount; i++) {
         fprintf(file, "%s\n", cities[i]);
     }
 
-    // Save distances
-    for (int i = 0; i < cityCount; i++) {
-        for (int j = 0; j < cityCount; j++) {
-            fprintf(file, "%d ", distances[i][j]);
+    // Save distances with city names
+fprintf(file, "=== Distance Table ===\n\n");
+
+// header row
+fprintf(file, "%-15s", "");
+for (int i = 0; i < cityCount; i++) {
+    fprintf(file, "%-15s", cities[i]);
+}
+fprintf(file, "\n");
+
+// each row with city name first
+for (int i = 0; i < cityCount; i++) {
+    fprintf(file, "%-15s", cities[i]); // row city name
+    for (int j = 0; j < cityCount; j++) {
+        if (i == j) {
+            fprintf(file, "%-15s", "0");
+        } else if (distances[i][j] == -1) {
+            fprintf(file, "%-15s", "-");
+        } else {
+            fprintf(file, "%-15d", distances[i][j]);
         }
-        fprintf(file, "\n");
     }
+    fprintf(file, "\n");
+}
+
 
     // Save deliveries
-    fprintf(file, "%d %d\n", deliveryCount, nextDeliveryId);
-    for (int i = 0; i < deliveryCount; i++) {
-        fprintf(file, "%d %d %d %d %d %d %s %.2f\n",
-                deliveryId[i], deliveryfromCity[i], deliverytoCity[i],
-                deliveryWeight[i], deliveryVehicle[i], deliveryCompleted[i],
-                deliveryCompletionTime[i], deliveryActualTime[i]);
+    fprintf(file, "=== Delivery Records ===\n");
+    fprintf(file, "Total Deliveries: %d, Next Delivery ID: %d\n\n", deliveryCount, nextDeliveryId);
+
+for (int i = 0; i < deliveryCount; i++) {
+    fprintf(file, "Delivery ID       : %d\n", deliveryId[i]);
+    fprintf(file, "From              : %s\n", cities[deliveryfromCity[i]]);
+    fprintf(file, "To                : %s\n", cities[deliverytoCity[i]]);
+    fprintf(file, "Weight (kg)       : %d\n", deliveryWeight[i]);
+    fprintf(file, "Vehicle           : %s\n", vehicleTypes[deliveryVehicle[i]]);
+    fprintf(file, "Completed?        : %s\n", deliveryCompleted[i] ? "Yes" : "No");
+    if (deliveryCompleted[i]) {
+        fprintf(file, "Completion Time   : %s\n", deliveryCompletionTime[i]);
+        fprintf(file, "Actual Time (hrs) : %.2f\n", deliveryActualTime[i]);
     }
+    fprintf(file, "-----------------------------\n");
+}
 
     fclose(file); //close the file when done
     printf("Data saved successfully!\n");
 }
+
