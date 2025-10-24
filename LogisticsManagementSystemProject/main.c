@@ -731,12 +731,19 @@ void calculateDeliveryCost() {
     int speed = vehicleAvgSpeed[vehicleIndex];
     int efficiency = vehicleFuelEfficiency[vehicleIndex];
 
+    // a. Delivery Cost:𝑪𝒐𝒔𝒕=𝑫 x 𝑹 x (𝟏+𝑾 X/𝟏𝟎𝟎𝟎𝟎)
     deliveryCost[deliveryIndex] = distance * rate * (1 + weight / 10000.0);
+    // b. Estimated Delivery Time (hours):𝑻𝒊𝒎𝒆= 𝑫/𝑺
     estimatedTime[deliveryIndex] = (float)distance / speed;
+    // c. Fuel Consumption:𝑭𝒖𝒆𝒍𝑼𝒔𝒆𝒅=𝑫/𝑬
     fuelUsed[deliveryIndex] = (float)distance / efficiency;
+    // d. Fuel Cost:𝑭𝒖𝒆𝒍𝑪𝒐𝒔𝒕=𝑭𝒖𝒆𝒍𝑼𝒔𝒆𝒅 x 𝑭
     fuelCost[deliveryIndex] = fuelUsed[deliveryIndex] * FUEL_PRICE;
+    // e. Total Operational Cost:𝑻𝒐𝒕𝒂𝒍𝑪𝒐𝒔𝒕=𝐃𝐞𝐥𝐢𝐯𝐞𝐫𝐲𝑪𝒐𝒔𝒕+𝑭𝒖𝒆𝒍𝑪𝒐𝒔𝒕
     totalCost[deliveryIndex] = deliveryCost[deliveryIndex] + fuelCost[deliveryIndex];
+    // f. Profit Calculation: 𝑷𝒓𝒐𝒇𝒊𝒕=(𝑪𝒐𝒔𝒕 x 𝟎.𝟐𝟓)
     profit[deliveryIndex] = deliveryCost[deliveryIndex] * 0.25;
+    // g. Final Charge to Customer: 𝑪𝒖𝒔𝒕𝒐𝒎𝒆𝒓𝑪𝒉𝒂𝒓𝒈𝒆=𝑻𝒐𝒕𝒂𝒍𝑪𝒐𝒔𝒕+𝑷𝒓𝒐𝒇𝒊𝒕
     customerCharge[deliveryIndex] = totalCost[deliveryIndex] + profit[deliveryIndex];
 
     printf("\nCalculations completed!\n");
