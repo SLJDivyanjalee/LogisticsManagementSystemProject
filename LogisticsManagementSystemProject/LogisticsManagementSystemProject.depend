@@ -1,0 +1,6 @@
+# depslib dependency file v1.0
+1761308555 source:f:\nangi\uni\first year\first semester\computer science\logisticsmanagementsystemproject\logisticsmanagementsystemproject\main.c
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+
