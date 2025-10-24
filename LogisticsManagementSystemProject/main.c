@@ -4,10 +4,12 @@
 
 #define MAX_CITIES 30
 #define NAME_LENGTH 50
+#define NUM_VEHICLES 3
 
 void mainMenu();
 void cityManagement();
 void distanceManagement();
+void vehicleManagement();
 
 //city management functions
 void addCity();
@@ -23,9 +25,20 @@ void inputDistance();
 void editDistance();
 void viewDistanceTable();
 
+//vehicle management functions
+void initializeVehicles();
+void displayVehicles();
+int selectVehicle();
+
 char cities[MAX_CITIES][NAME_LENGTH];
 int cityCount = 0;
 int distances[MAX_CITIES][MAX_CITIES];
+
+char vehicleTypes[3][20];
+int vehicleCapacity[3];
+int vehicleRatePerKm[3];
+int vehicleAvgSpeed[3];
+int vehicleFuelEfficiency[3];
 
 int main()
 {
@@ -33,6 +46,7 @@ int main()
     printf("---------------------------------------\n");
 
     initializeDistances();
+    initializeVehicles();
 
     mainMenu();
     return 0;
@@ -67,6 +81,7 @@ void mainMenu(){
                 break;
             case 3:
                 printf("\n--- Vehicle Management ---\n");
+                vehicleManagement();
                 break;
             case 4:
                 printf("\n--- Delivery Request Handling ---\n");
@@ -417,3 +432,86 @@ void editDistance() {
     printf("Distance updated successfully!\n");
 }
 
+// -------------------------- Vehicle Management ----------------------
+void vehicleManagement() {
+    int choice;
+    do {
+        printf(" \tMenu\n");
+        printf("1. Select vehicle for estimation\n");
+        printf("2. Back to Main Menu\n\n");
+        printf("Enter your choice (1-2): ");
+        scanf("%d", &choice);
+        getchar();
+
+        switch (choice) {
+            case 1:
+                selectVehicle();
+                break;
+            case 2:
+                printf("Returning to Main Menu...\n");
+                break;
+            default:
+                printf("Invalid choice! Please try again.\n");
+        }
+    } while (choice != 2);
+}
+
+void initializeVehicles() {
+    strcpy(vehicleTypes[0], "Van");
+    strcpy(vehicleTypes[1], "Truck");
+    strcpy(vehicleTypes[2], "Lorry");
+
+    vehicleCapacity[0] = 1000;
+    vehicleCapacity[1] = 5000;
+    vehicleCapacity[2] = 10000;
+
+    vehicleRatePerKm[0] = 30;
+    vehicleRatePerKm[1] = 40;
+    vehicleRatePerKm[2] = 80;
+
+    vehicleAvgSpeed[0] = 60;
+    vehicleAvgSpeed[1] = 50;
+    vehicleAvgSpeed[2] = 45;
+
+    vehicleFuelEfficiency[0] = 12;
+    vehicleFuelEfficiency[1] = 6;
+    vehicleFuelEfficiency[2] = 4;
+}
+
+void displayVehicles() {
+    printf("\n    - Available Vehicles -\n\n");
+    printf("Type       Capacity    Rate/km    Speed    Fuel Efficiency   \n");
+    printf("------------------------------------------------------------\n");
+
+    for (int i = 0; i < NUM_VEHICLES; i++) {
+        printf("%-11s %-10d %-9d %-10d %-11d \n",
+               vehicleTypes[i],
+               vehicleCapacity[i],
+               vehicleRatePerKm[i],
+               vehicleAvgSpeed[i],
+               vehicleFuelEfficiency[i]);
+
+    }
+}
+
+int selectVehicle() {
+    int choice;
+    displayVehicles();
+
+    printf("\n\nSelect vehicle type:\n");
+    printf("1. Van\n");
+    printf("2. Truck\n");
+    printf("3. Lorry\n");
+    printf("\nEnter your choice (1-3): ");
+    scanf("%d", &choice);
+    getchar();
+
+    if (choice >= 1 && choice <= 3) {
+        int index = choice - 1;
+        printf("\nVehicle selected: %s\n", vehicleTypes[index]);
+        return index;
+    } else {
+        printf("Invalid choice!\n");
+        return -1;
+    }
+}
