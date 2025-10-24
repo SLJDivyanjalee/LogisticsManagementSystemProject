@@ -127,6 +127,9 @@ void addCity() {
     }
 
     char cityName[NAME_LENGTH];
+
+    while (getchar() != '\n');
+
     printf("Enter city name: ");
     fgets(cityName, NAME_LENGTH, stdin);
     cityName[strcspn(cityName, "\n")] = '\0'; // remove newline
@@ -190,9 +193,12 @@ void renameCity() {
     }
 
     char cityName[NAME_LENGTH], newCityName[NAME_LENGTH];
+
+    while (getchar() != '\n');
+
     printf("Enter city name you want to rename :");
-    scanf("%[^\n]", cityName); // read entire line including spaces
-    getchar(); // clear the newline from buffer
+    fgets(cityName, NAME_LENGTH, stdin);
+    cityName[strcspn(cityName, "\n")] = '\0';
 
     int index = searchCity(cityName);
     if (index == -1) {
@@ -201,7 +207,8 @@ void renameCity() {
     }
 
     printf("Enter new city name: ");
-    scanf("%c",cityName);
+    fgets(newCityName, NAME_LENGTH, stdin);
+    newCityName[strcspn(newCityName, "\n")] = '\0';
 
     if (strlen(newCityName) == 0) {
         printf("city name can't be empty!\n");
@@ -219,9 +226,12 @@ void removeCity() {
     }
 
     char cityName[NAME_LENGTH];
+
+    while (getchar() != '\n');
+
     printf("Enter city name you want to remove:");
-    scanf("%[^\n]", cityName); // read entire line including spaces
-    getchar(); // clear the newline from buffer
+    fgets(cityName, NAME_LENGTH, stdin);
+    cityName[strcspn(cityName, "\n")] = '\0'; // remove newline
 
     int index = searchCity(cityName);
     if (index == -1) {
