@@ -7,6 +7,7 @@
 
 void mainMenu();
 void cityManagement();
+void distanceManagement();
 
 //city management functions
 void addCity();
@@ -16,13 +17,22 @@ void removeCity();
 int searchCity(char name[]);
 void toLowerCase(char str[]);
 
+//distance management functions
+void initializeDistances();
+void inputDistance();
+void editDistance();
+void viewDistanceTable();
+
 char cities[MAX_CITIES][NAME_LENGTH];
 int cityCount = 0;
+int distances[MAX_CITIES][MAX_CITIES];
 
 int main()
 {
     printf("\n      Logistics Management System  \n");
     printf("---------------------------------------\n");
+
+    initializeDistances();
 
     mainMenu();
     return 0;
@@ -53,6 +63,7 @@ void mainMenu(){
                 break;
             case 2:
                 printf("\n--- Distance Management ---\n");
+                distanceManagement();
                 break;
             case 3:
                 printf("\n--- Vehicle Management ---\n");
@@ -245,4 +256,164 @@ void removeCity() {
     cityCount--;
     printf("City '%s' removed successfully!\n", cityName);
     }
+
+// -------------------------- Distance Management ----------------------
+void distanceManagement() {
+    int choice;
+    do {
+        printf(" \tMenu \n");
+        printf("1. Input distance between cities\n");
+        printf("2. Edit distance between cities\n");
+        printf("3. Display distance table\n");
+        printf("4. Back to Main Menu\n");
+
+        printf("Enter your choice (1-4): ");
+        scanf("%d", &choice);
+        getchar();
+
+        switch (choice) {
+            case 1:
+                inputDistance();
+                break;
+            case 2:
+                editDistance();
+                break;
+            case 3:
+                viewDistanceTable();
+                break;
+            case 4:
+                printf("Returning to Main Menu...\n");
+                break;
+            default:
+                printf("Invalid choice! Please try again.\n");
+        }
+    } while (choice != 4);
+}
+
+void initializeDistances() {
+    for (int i = 0; i < MAX_CITIES; i++) {
+        for (int j = 0; j < MAX_CITIES; j++) {
+            if (i == j) {
+                distances[i][j] = 0;
+            } else {
+                distances[i][j] = -1;
+            }
+        }
+    }
+}
+
+void inputDistance() {
+    if (cityCount < 2) {
+        printf("need at least 2 cities to input distances!\n");
+        return;
+    }
+
+    char cityOne[NAME_LENGTH], cityTwo[NAME_LENGTH];
+    int distance;
+
+    printf("\nCities:\n");
+    displayCities();
+
+    printf("\nEnter first city name: ");
+    fgets(cityOne, NAME_LENGTH, stdin);
+    cityOne[strlen(cityOne)-1] = '\0';
+
+    printf("Enter second city name: ");
+    fgets(cityTwo, NAME_LENGTH, stdin);
+    cityTwo[strlen(cityTwo)-1] = '\0';
+
+    int inputOne = searchCity(cityOne);
+    int inputTwo = searchCity(cityTwo);
+
+    if (inputOne == -1 || inputTwo == -1) {
+        printf("Error: One or both cities not found!\n");
+        return;
+    }
+
+    if (inputOne == inputTwo) {
+        printf("Error: Cannot set distance from city to itself!\n");
+        return;
+    }
+
+    printf("Enter distance between %s and %s (in km): ", cities[inputOne], cities[inputTwo]);
+    scanf("%d", &distance);
+    getchar();
+
+    if (distance <= 0) {
+        printf("Error: Distance must be positive!\n");
+        return;
+    }
+
+    distances[inputOne][inputTwo] = distance;
+    distances[inputTwo][inputOne] = distance;
+    printf("Distance set successfully!\n");
+}
+
+void viewDistanceTable() {
+    if (cityCount == 0) {
+        printf("No cities in the system.\n");
+        return;
+    }
+
+    printf("\n=== Distance Table ===\n\n");
+    printf("%-15s", "");
+    for (int i = 0; i < cityCount; i++) {
+        printf("%-15s", cities[i]);
+    }
+    printf("\n");
+
+    for (int i = 0; i < cityCount; i++) {
+        printf("%-15s", cities[i]);
+        for (int j = 0; j < cityCount; j++) {
+            if (i == j) {
+                printf("%-15s", "0");
+            } else if (distances[i][j] == -1) {
+                printf("%-15s", "-");
+            } else {
+                printf("%-15d", distances[i][j]);
+            }
+        }
+        printf("\n");
+    }
+}
+
+void editDistance() {
+    if (cityCount < 2) {
+        printf("need at least 2 cities to edit distances!\n");
+        return;
+    }
+
+    char cityOne[NAME_LENGTH], cityTwo[NAME_LENGTH];
+    int distance;
+
+    printf("\nEnter first city name: ");
+    fgets(cityOne, NAME_LENGTH, stdin);
+    cityOne[strlen(cityOne)-1] = '\0';
+
+    printf("Enter second city name: ");
+    fgets(cityTwo, NAME_LENGTH, stdin);
+    cityTwo[strlen(cityTwo)-1] = '\0';
+
+    int inputOne = searchCity(cityOne);
+    int inputTwo = searchCity(cityTwo);
+
+    if (inputOne == -1 || inputTwo == -1) {
+        printf("cities not found!\n");
+        return;
+    }
+
+    if (distances[inputOne][inputTwo] == -1) {
+        printf("no distance entered between these cities!\n");
+        return;
+    }
+
+    printf("Current distance: %d km\n", distances[inputOne][inputTwo]);
+    printf("Enter new distance(km): ");
+    scanf("%d", &distance);
+    getchar();
+
+    distances[inputOne][inputTwo] = distance;
+    distances[inputTwo][inputOne] = distance;
+    printf("Distance updated successfully!\n");
+}
 
