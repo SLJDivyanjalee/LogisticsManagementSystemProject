@@ -16,6 +16,7 @@ void deliveryRequestHandling();
 void costTimeFuelCalculations();
 void deliveryRecords();
 void leastCostRoute();
+void performanceReports();
 
 //city management functions
 void addCity();
@@ -53,9 +54,16 @@ void markDeliveryCompleted();
 
 //least code route functions
 void findLeastCostRoute();
-void displayAllLeastCostRoutes();
+void viewAllLeastCostRoutes();
 int isRouteAvailable(int cityOne, int cityTwo);
 int getRouteDistance(int cityOne, int cityTwo);
+
+//performance reports functions
+void totalDeliveriesCompleted();
+void totalDistanceCovered();
+void averageDeliveryTime();
+void totalRevenueAndProfit();
+void longestShortestRoutes();
 
 char cities[MAX_CITIES][NAME_LENGTH];
 int cityCount = 0;
@@ -152,6 +160,7 @@ void mainMenu(){
                 break;
             case 8:
                 printf("\n--- Performance Reports ---\n");
+                performanceReports();
                 break;
             case 9:
                 printf("\nSaving data\n");
@@ -998,7 +1007,7 @@ void leastCostRoute() {
                 findLeastCostRoute();
                 break;
             case 2:
-                displayAllLeastCostRoutes();
+                viewAllLeastCostRoutes();
                 break;
             case 3:
                 printf("Returning to Main Menu...\n");
@@ -1129,7 +1138,7 @@ void findLeastCostRoute() {
     }
 }
 
-void displayAllLeastCostRoutes() {
+void viewAllLeastCostRoutes() {
     if (cityCount < 2) {
         printf("need at least 2 cities to display routes!\n");
         return;
@@ -1168,4 +1177,147 @@ int getRouteDistance(int cityOne, int cityTwo) {
     }
     return distances[cityOne][cityTwo];
 }
+
+// -------------------------- Performance Reports ----------------------
+void performanceReports(){
+    char choice;
+    do{
+        printf("\n\t menu\n");
+        printf(" a. Total Deliveries Completed\n");
+        printf(" b. Total Distance Covered\n");
+        printf(" c. Average Delivery Time\n");
+        printf(" d. Total Revenue and profit\n");
+        printf(" e. Longest and Shortest Routes Completed\n");
+        printf(" f. Back to Main Menu\n\n");
+
+        printf("Enter your choice (a-f): ");
+        scanf(" %c", &choice);
+        getchar();
+
+        switch (choice) {
+            case 'a':
+                totalDeliveriesCompleted();
+                break;
+            case 'b':
+                totalDistanceCovered();
+                break;
+            case 'c':
+                averageDeliveryTime();
+                break;
+            case 'd':
+                totalRevenueAndProfit();
+                break;
+            case 'e':
+                longestShortestRoutes();
+                break;
+            case 'f':
+                printf("Returning to Main Menu...\n");
+                break;
+            default:
+                printf("Invalid choice! Please try again.\n");
+        }
+    } while (choice != 'f');
+}
+
+void totalDeliveriesCompleted() {
+    int completed = 0;
+    for (int i = 0; i < deliveryCount; i++) {
+        if (deliveryCompleted[i]) completed++;
+    }
+
+    printf("\n=== Total Deliveries Completed ===\n");
+    printf("Completed: %d\n", completed);
+    printf("Pending: %d\n", deliveryCount - completed);
+    printf("Total: %d\n", deliveryCount);
+}
+
+void totalDistanceCovered() {
+    float total = 0;
+    int completed = 0;
+
+    for (int i = 0; i < deliveryCount; i++) {
+        if (deliveryCompleted[i]) {
+            total += distances[deliveryfromCity[i]][deliverytoCity[i]];
+            completed++;
+        }
+    }
+
+    printf("\n=== Total Distance Covered ===\n");
+    printf("Total Distance: %.0f km\n", total);
+    if (completed > 0) {
+        printf("Average per Delivery: %.1f km\n", total / completed);
+    }
+}
+
+void averageDeliveryTime() {
+    float totalTime = 0;
+    int completed = 0;
+
+    for (int i = 0; i < deliveryCount; i++) {
+        if (deliveryCompleted[i] && deliveryActualTime[i] > 0) {
+            totalTime += deliveryActualTime[i];
+            completed++;
+        }
+    }
+
+    printf("\n=== Average Delivery Time ===\n");
+    if (completed > 0) {
+        printf("Average Time: %.1f hours\n", totalTime / completed);
+    } else {
+        printf("no completed deliveries with time data.\n");
+    }
+}
+
+void totalRevenueAndProfit() {
+    float totalRevenue = 0;
+    float totalProfit = 0;
+
+    for (int i = 0; i < deliveryCount; i++) {
+        if (deliveryCompleted[i] && customerCharge[i] > 0) {
+            totalRevenue += customerCharge[i];
+            totalProfit += profit[i];
+        }
+    }
+
+    printf("\n=== Total Revenue and Profit ===\n");
+    printf("Total Revenue: LKR %.2f\n", totalRevenue);
+    printf("Total Profit: LKR %.2f\n", totalProfit);
+}
+
+void longestShortestRoutes() {
+    if (deliveryCount == 0) {
+        printf("no deliveries to analyze.\n");
+        return;
+    }
+
+    int longest = 0;
+    int shortest = 100000;
+    int longId = -1;
+    int shortId = -1;
+
+    for (int i = 0; i < deliveryCount; i++) {
+        if (deliveryCompleted[i]) {
+            int dist = distances[deliveryfromCity[i]][deliverytoCity[i]];
+            if (dist > longest) {
+                longest = dist;
+                longId = i;
+            }
+            if (dist < shortest) {
+                shortest = dist;
+                shortId = i;
+            }
+        }
+    }
+
+    printf("\n=== Longest and Shortest Routes ===\n");
+    if (longId != -1) {
+        printf("Longest: %d km (%s -> %s)\n", longest,
+               cities[deliveryfromCity[longId]], cities[deliverytoCity[longId]]);
+    }
+    if (shortId != -1) {
+        printf("Shortest: %d km (%s -> %s)\n", shortest,
+               cities[deliveryfromCity[shortId]], cities[deliverytoCity[shortId]]);
+    }
+}
+
 
