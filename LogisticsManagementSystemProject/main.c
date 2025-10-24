@@ -74,6 +74,8 @@ int vehicleCapacity[3];
 int vehicleRatePerKm[3];
 int vehicleAvgSpeed[3];
 int vehicleFuelEfficiency[3];
+int vehicleTotal[3];
+int vehicleAvailable[3];
 
 int deliveryCount = 0;
 int nextDeliveryId = 1;
@@ -540,20 +542,30 @@ void initializeVehicles() {
     vehicleFuelEfficiency[0] = 12;
     vehicleFuelEfficiency[1] = 6;
     vehicleFuelEfficiency[2] = 4;
+
+    vehicleTotal[0] = 3;
+    vehicleTotal[1] = 2;
+    vehicleTotal[2] = 3;
+
+    vehicleAvailable[0] = 3;
+    vehicleAvailable[1] = 2;
+    vehicleAvailable[2] = 3;
 }
 
 void displayVehicles() {
     printf("\n    - Available Vehicles -\n\n");
-    printf("Type       Capacity    Rate/km    Speed    Fuel Efficiency   \n");
+    printf("Type       Capacity    Rate/km    Speed    Fuel Efficiency     Available \n");
     printf("------------------------------------------------------------\n");
 
     for (int i = 0; i < NUM_VEHICLES; i++) {
-        printf("%-11s %-10d %-9d %-10d %-11d \n",
+        printf("%-11s %-10d %-9d %-10d %-11d  %d/%d \n",
                vehicleTypes[i],
                vehicleCapacity[i],
                vehicleRatePerKm[i],
                vehicleAvgSpeed[i],
-               vehicleFuelEfficiency[i]);
+               vehicleFuelEfficiency[i]
+               vehicleAvailable[i],
+               vehicleTotal[i]);
 
     }
 }
@@ -670,6 +682,7 @@ void processDelivery() {
 
     nextDeliveryId++;
     deliveryCount++;
+    vehicleAvailable[vehicleIndex]--;
 }
 
 void viewActiveDeliveries() {
@@ -981,6 +994,7 @@ void markDeliveryCompleted() {
             deliveryCompleted[i] = 1;
             strcpy(deliveryCompletionTime[i], time);
             deliveryActualTime[i] = actualTime;
+            vehicleAvailable[vehicleIndex]++;
             printf("Delivery marked as completed!\n");
             return;
         }
