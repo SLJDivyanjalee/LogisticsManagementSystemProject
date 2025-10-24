@@ -17,6 +17,7 @@ void costTimeFuelCalculations();
 void deliveryRecords();
 void leastCostRoute();
 void performanceReports();
+void saveData();
 
 //city management functions
 void addCity();
@@ -110,6 +111,7 @@ int main()
     initializeVehicles();
 
     mainMenu();
+    saveData();
     return 0;
 }
 
@@ -166,6 +168,7 @@ void mainMenu(){
                 break;
             case 9:
                 printf("\nSaving data\n");
+                saveData();
                 break;
             case 10:
                 printf("\nExiting from the system\n"); //this will exit from the system without saving
@@ -1335,4 +1338,38 @@ void longestShortestRoutes() {
     }
 }
 
+// --------------------- File Handling -------------------
+void saveData() {
+    FILE *file = fopen("data.txt", "w"); //FILE *file declares file pointer named file
+                                        // w -> create the file if it doesn’t exist or overwrite it if it does.
+    if (file == NULL) {
+        printf("Error saving data!\n");
+        return;
+    }
 
+    // Save cities
+    fprintf(file, "%d\n", cityCount);  //fprintf -> save all data to the file
+    for (int i = 0; i < cityCount; i++) {
+        fprintf(file, "%s\n", cities[i]);
+    }
+
+    // Save distances
+    for (int i = 0; i < cityCount; i++) {
+        for (int j = 0; j < cityCount; j++) {
+            fprintf(file, "%d ", distances[i][j]);
+        }
+        fprintf(file, "\n");
+    }
+
+    // Save deliveries
+    fprintf(file, "%d %d\n", deliveryCount, nextDeliveryId);
+    for (int i = 0; i < deliveryCount; i++) {
+        fprintf(file, "%d %d %d %d %d %d %s %.2f\n",
+                deliveryId[i], deliveryfromCity[i], deliverytoCity[i],
+                deliveryWeight[i], deliveryVehicle[i], deliveryCompleted[i],
+                deliveryCompletionTime[i], deliveryActualTime[i]);
+    }
+
+    fclose(file); //close the file when done
+    printf("Data saved successfully!\n");
+}
