@@ -18,7 +18,7 @@ void deliveryRecords();
 void leastCostRoute();
 void performanceReports();
 void saveData();
-
+void loadData();
 
 //city management functions
 void addCity();
@@ -110,6 +110,8 @@ int main()
 
     initializeDistances();
     initializeVehicles();
+
+    loadData(); //reads data from a file
 
     mainMenu();
 
@@ -1405,3 +1407,35 @@ for (int i = 0; i < deliveryCount; i++) {
     printf("Data saved successfully!\n");
 }
 
+void loadData() {
+    FILE *file = fopen("data.txt", "r");
+    if (file == NULL) {
+        printf("No saved data found.\n");
+        return;
+    }
+
+    // Load cities
+    fscanf(file, "%d", &cityCount);
+    for (int i = 0; i < cityCount; i++) {
+        fscanf(file, "%s", cities[i]);
+    }
+
+    // Load distances
+    for (int i = 0; i < cityCount; i++) {
+        for (int j = 0; j < cityCount; j++) {
+            fscanf(file, "%d", &distances[i][j]);
+        }
+    }
+
+    // Load deliveries
+    fscanf(file, "%d %d", &deliveryCount, &nextDeliveryId);  //fscanf -> read data from a file
+    for (int i = 0; i < deliveryCount; i++) {
+        fscanf(file, "%d %d %d %d %d %d %s %f",
+               &deliveryId[i], &deliveryfromCity[i], &deliverytoCity[i],
+               &deliveryWeight[i], &deliveryVehicle[i], &deliveryCompleted[i],
+               deliveryCompletionTime[i], &deliveryActualTime[i]);
+    }
+
+    fclose(file);
+    printf("Data loaded successfully!\n");
+}
