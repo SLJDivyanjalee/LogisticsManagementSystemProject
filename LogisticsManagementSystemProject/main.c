@@ -15,6 +15,7 @@ void vehicleManagement();
 void deliveryRequestHandling();
 void costTimeFuelCalculations();
 void deliveryRecords();
+void leastCostRoute();
 
 //city management functions
 void addCity();
@@ -50,6 +51,12 @@ void viewCompletedDeliveries();
 void viewPendingDeliveries();
 void markDeliveryCompleted();
 
+//least code route functions
+void findLeastCostRoute();
+void displayAllLeastCostRoutes();
+int isRouteAvailable(int cityOne, int cityTwo);
+int getRouteDistance(int cityOne, int cityTwo);
+
 char cities[MAX_CITIES][NAME_LENGTH];
 int cityCount = 0;
 int distances[MAX_CITIES][MAX_CITIES];
@@ -78,6 +85,11 @@ float fuelCost[MAX_DELIVERIES];
 float totalCost[MAX_DELIVERIES];
 float profit[MAX_DELIVERIES];
 float customerCharge[MAX_DELIVERIES];
+
+int tempRoute[4];
+int bestRoute[4];
+int minDistance = 999999;
+int bestRouteSize = 0;
 
 int main()
 {
@@ -136,6 +148,7 @@ void mainMenu(){
                 break;
             case 7:
                 printf("\n--- Least Cost Route ---\n");
+                leastCostRoute();
                 break;
             case 8:
                 printf("\n--- Performance Reports ---\n");
@@ -303,7 +316,7 @@ void removeCity() {
 
     int index = searchCity(cityName);
     if (index == -1) {
-        printf("Error: City '%s' not found!\n", cityName);
+        printf("City '%s' not found!\n", cityName);
         return;
     }
 
@@ -383,12 +396,12 @@ void inputDistance() {
     int inputTwo = searchCity(cityTwo);
 
     if (inputOne == -1 || inputTwo == -1) {
-        printf("Error: One or both cities not found!\n");
+        printf("One or both cities not found!\n");
         return;
     }
 
     if (inputOne == inputTwo) {
-        printf("Error: Cannot set distance from city to itself!\n");
+        printf("can't set distance from city to itself!\n");
         return;
     }
 
@@ -397,7 +410,7 @@ void inputDistance() {
     getchar();
 
     if (distance <= 0) {
-        printf("Error: Distance must be positive!\n");
+        printf("Distance must be positive!\n");
         return;
     }
 
@@ -622,7 +635,7 @@ void processDelivery() {
     }
 
     if (fromCity == toCity) {
-        printf("departure and destination cannot be same!\n");
+        printf("departure and destination can't be same!\n");
         return;
     }
 
@@ -725,7 +738,7 @@ void calculateDeliveryCost() {
     }
 
     if (deliveryIndex == -1) {
-        printf("Error: Delivery not found!\n");
+        printf("delivery not found!\n");
         return;
     }
 
@@ -967,4 +980,192 @@ void markDeliveryCompleted() {
     printf("Delivery not found or already completed!\n");
 }
 
+// -------------------------- Least Cost Route ----------------------
+void leastCostRoute() {
+    int choice;
+    do {
+        printf(" \tMenu\n");
+        printf("1. Find least-cost route between cities\n");
+        printf("2. View all least-cost routes\n");
+        printf("3. Back to Main Menu\n");
+
+        printf("Enter your choice (1-3): ");
+        scanf("%d", &choice);
+        getchar();
+
+        switch (choice) {
+            case 1:
+                findLeastCostRoute();
+                break;
+            case 2:
+                displayAllLeastCostRoutes();
+                break;
+            case 3:
+                printf("Returning to Main Menu...\n");
+                break;
+            default:
+                printf("Invalid choice! Please try again.\n");
+        }
+    } while (choice != 3);
+}
+
+void findLeastCostRoute() {
+    if (cityCount < 2) {
+        printf("need at least 2 cities to find routes!\n");
+        return;
+    }
+    char fromCity[NAME_LENGTH], toCity[NAME_LENGTH];
+
+    printf("\n=== Find Least Cost Route ===\n");
+    printf("Available cities:\n");
+    displayCities();
+
+    printf("\nEnter departure city: ");
+    fgets(fromCity, NAME_LENGTH, stdin);
+    fromCity[strcspn(fromCity, "\n")] = '\0';
+
+    printf("Enter destination city: ");
+    fgets(toCity, NAME_LENGTH, stdin);
+    toCity[strcspn(toCity, "\n")] = '\0';
+
+    int fromCityIndex = searchCity(fromCity);
+    int toCityIndex = searchCity(toCity);
+
+    if (fromCityIndex == -1) {
+        printf("departure city '%s' not found!\n", fromCity);
+        return;
+    }
+    if (toCityIndex == -1) {
+        printf("destination city '%s' not found!\n", toCity);
+        return;
+    }
+    if (fromCityIndex == toCityIndex) {
+        printf("departure and destination can't be the same!\n");
+        return;
+    }
+
+    printf("\nSearching for least-cost route...\n");
+
+    if (distances[fromCityIndex][toCityIndex] != -1) {
+        minDistance = distances[fromCityIndex][toCityIndex];
+        bestRoute[0] = fromCityIndex;
+        bestRoute[1] = toCityIndex;
+        bestRouteSize = 2;
+        printf("direct route found: %d km\n", minDistance);
+    } else {
+        printf("no direct route available\n");
+    }
+
+    for (int i = 0; i < cityCount; i++) {
+        if (i != fromCityIndex && i != toCityIndex) {
+            if (distances[fromCityIndex][i] != -1 && distances[i][toCityIndex] != -1) {
+                int totalDistance = distances[fromCityIndex][i] + distances[i][toCityIndex];
+                if (totalDistance < minDistance) {
+                    minDistance = totalDistance;
+                    bestRoute[0] = fromCityIndex;
+                    bestRoute[1] = i;
+                    bestRoute[2] = toCityIndex;
+                    bestRouteSize = 3;
+                }
+            }
+        }
+    }
+
+    for (int i = 0; i < cityCount; i++) {
+        for (int j = 0; j < cityCount; j++) {
+            if (i != fromCityIndex && i != toCityIndex &&
+                j != fromCityIndex && j != toCityIndex && i != j) {
+                if (distances[fromCityIndex][i] != -1 &&
+                    distances[i][j] != -1 &&
+                    distances[j][toCityIndex] != -1) {
+                    int totalDistance = distances[fromCityIndex][i] + distances[i][j] + distances[j][toCityIndex];
+                    if (totalDistance < minDistance) {
+                        minDistance = totalDistance;
+                        bestRoute[0] = fromCityIndex;
+                        bestRoute[1] = i;
+                        bestRoute[2] = j;
+                        bestRoute[3] = toCityIndex;
+                        bestRouteSize = 4;
+                    }
+                }
+            }
+        }
+    }
+
+    printf("\n=== Route Finding Results ===\n");
+    printf("From: %s\n", cities[fromCityIndex]);
+    printf("To: %s\n", cities[toCityIndex]);
+
+    if (minDistance == 999999) {
+        printf("no valid route found between these cities!\n");
+    } else {
+        printf("\n--- least-cost Route Found ---\n");
+        printf("Route: ");
+        for (int i = 0; i < bestRouteSize; i++) {
+            printf("%s", cities[bestRoute[i]]);
+            if (i < bestRouteSize - 1) {
+                printf(" => ");
+            }
+        }
+        printf("\nTotal Distance: %d km\n", minDistance);
+
+        if (distances[fromCityIndex][toCityIndex] != -1 && bestRouteSize > 2) {
+            int directDistance = distances[fromCityIndex][toCityIndex];
+            printf("Direct route distance: %d km\n", directDistance);
+            if (minDistance < directDistance) {
+                printf("Savings: %d km (%.1f%% better)\n",
+                       directDistance - minDistance,
+                       ((float)(directDistance - minDistance) / directDistance) * 100);
+            }
+        }
+
+        printf("\n--- Cost Analysis ---\n");
+        for (int vehicleType = 0; vehicleType < NUM_VEHICLES; vehicleType++) {
+            float cost = minDistance * vehicleRatePerKm[vehicleType];
+            float time = (float)minDistance / vehicleAvgSpeed[vehicleType];
+            printf("%s: %.2f LKR, Time: %.1f hours\n",
+                   vehicleTypes[vehicleType], cost, time);
+        }
+    }
+}
+
+void displayAllLeastCostRoutes() {
+    if (cityCount < 2) {
+        printf("need at least 2 cities to display routes!\n");
+        return;
+    }
+
+    printf("\n=== All Possible least-cost Routes ===\n\n");
+    int routeCount = 0;
+
+    for (int i = 0; i < cityCount; i++) {
+        for (int j = i + 1; j < cityCount; j++) {
+            if (distances[i][j] != -1) {
+                printf("Route %d: %s <--> %s | Distance: %d km\n",
+                       ++routeCount, cities[i], cities[j], distances[i][j]);
+            }
+        }
+    }
+
+    if (routeCount == 0) {
+        printf("no routes available. Please add cities and distances first.\n");
+    } else {
+        printf("\nTotal routes available: %d\n", routeCount);
+    }
+}
+
+int isRouteAvailable(int cityOne, int cityTwo) {
+    if (cityOne < 0 || cityOne >= cityCount || cityTwo < 0 || cityTwo >= cityCount) {
+        return 0;
+    }
+    return distances[cityOne][cityTwo] != -1;
+}
+
+// getting route distance between two cities
+int getRouteDistance(int cityOne, int cityTwo) {
+    if (cityOne < 0 || cityOne >= cityCount || cityTwo < 0 || cityTwo >= cityCount) {
+        return -1;
+    }
+    return distances[cityOne][cityTwo];
+}
 
