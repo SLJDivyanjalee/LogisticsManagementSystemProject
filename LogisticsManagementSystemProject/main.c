@@ -563,7 +563,7 @@ void displayVehicles() {
                vehicleCapacity[i],
                vehicleRatePerKm[i],
                vehicleAvgSpeed[i],
-               vehicleFuelEfficiency[i]
+               vehicleFuelEfficiency[i],
                vehicleAvailable[i],
                vehicleTotal[i]);
 
@@ -991,6 +991,7 @@ void markDeliveryCompleted() {
 
     for (int i = 0; i < deliveryCount; i++) {
         if (deliveryId[i] == deliveryIdInput && !deliveryCompleted[i]) {
+            int vehicleIndex = deliveryVehicle[i];
             deliveryCompleted[i] = 1;
             strcpy(deliveryCompletionTime[i], time);
             deliveryActualTime[i] = actualTime;
