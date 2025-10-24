@@ -14,6 +14,7 @@ void distanceManagement();
 void vehicleManagement();
 void deliveryRequestHandling();
 void costTimeFuelCalculations();
+void deliveryRecords();
 
 //city management functions
 void addCity();
@@ -38,10 +39,16 @@ int selectVehicle();
 void processDelivery();
 void viewActiveDeliveries();
 
-//cost,time,fuel calculation
+//cost,time,fuel calculation functions
 void calculateDeliveryCost();
 void viewAllCalculations();
 void displayCalculationResults(int index);
+
+//delivery records functions
+void viewAllDeliveries();
+void viewCompletedDeliveries();
+void viewPendingDeliveries();
+void markDeliveryCompleted();
 
 char cities[MAX_CITIES][NAME_LENGTH];
 int cityCount = 0;
@@ -125,6 +132,7 @@ void mainMenu(){
                 break;
             case 6:
                 printf("\n--- Delivery Records ---\n");
+                deliveryRecords();
                 break;
             case 7:
                 printf("\n--- Least Cost Route ---\n");
@@ -731,19 +739,25 @@ void calculateDeliveryCost() {
     int speed = vehicleAvgSpeed[vehicleIndex];
     int efficiency = vehicleFuelEfficiency[vehicleIndex];
 
-    // a. Delivery Cost:𝑪𝒐𝒔𝒕=𝑫 x 𝑹 x (𝟏+𝑾 X/𝟏𝟎𝟎𝟎𝟎)
+    // a. Delivery Cost: Cost=D*R*(1+W X/100000)
     deliveryCost[deliveryIndex] = distance * rate * (1 + weight / 10000.0);
-    // b. Estimated Delivery Time (hours):𝑻𝒊𝒎𝒆= 𝑫/𝑺
+
+    // b. Estimated Delivery Time (hours): Time= D/S
     estimatedTime[deliveryIndex] = (float)distance / speed;
-    // c. Fuel Consumption:𝑭𝒖𝒆𝒍𝑼𝒔𝒆𝒅=𝑫/𝑬
+
+    // c. Fuel Consumption: FuelUsed= D/E
     fuelUsed[deliveryIndex] = (float)distance / efficiency;
-    // d. Fuel Cost:𝑭𝒖𝒆𝒍𝑪𝒐𝒔𝒕=𝑭𝒖𝒆𝒍𝑼𝒔𝒆𝒅 x 𝑭
+
+    // d. Fuel Cost: FuelCost = FuelUsed * F
     fuelCost[deliveryIndex] = fuelUsed[deliveryIndex] * FUEL_PRICE;
-    // e. Total Operational Cost:𝑻𝒐𝒕𝒂𝒍𝑪𝒐𝒔𝒕=𝐃𝐞𝐥𝐢𝐯𝐞𝐫𝐲𝑪𝒐𝒔𝒕+𝑭𝒖𝒆𝒍𝑪𝒐𝒔𝒕
+
+    // e. Total Operational Cost: TotalCost = DeliveryCost+FuelCost
     totalCost[deliveryIndex] = deliveryCost[deliveryIndex] + fuelCost[deliveryIndex];
-    // f. Profit Calculation: 𝑷𝒓𝒐𝒇𝒊𝒕=(𝑪𝒐𝒔𝒕 x 𝟎.𝟐𝟓)
+
+    // f. Profit Calculation: Profit =(Cost * 0.25)
     profit[deliveryIndex] = deliveryCost[deliveryIndex] * 0.25;
-    // g. Final Charge to Customer: 𝑪𝒖𝒔𝒕𝒐𝒎𝒆𝒓𝑪𝒉𝒂𝒓𝒈𝒆=𝑻𝒐𝒕𝒂𝒍𝑪𝒐𝒔𝒕+𝑷𝒓𝒐𝒇𝒊𝒕
+
+    // g. Final Charge to Customer: CustomerCharge =TotalCost + Profit
     customerCharge[deliveryIndex] = totalCost[deliveryIndex] + profit[deliveryIndex];
 
     printf("\nCalculations completed!\n");
@@ -798,4 +812,159 @@ void viewAllCalculations() {
         }
     }
 }
+
+// -------------------------- Delivery Records ----------------------
+void deliveryRecords() {
+    int choice;
+    do {
+        printf(" \tMenu\n");
+        printf("1. View all deliveries\n");
+        printf("2. View pending deliveries\n");
+        printf("3. View completed deliveries\n");
+        printf("4. Mark delivery as completed\n");
+        printf("5. Back to Main Menu\n");
+
+        printf("Enter your choice (1-5): ");
+        scanf("%d", &choice);
+        getchar();
+
+        switch (choice) {
+            case 1:
+                viewAllDeliveries();
+                break;
+            case 2:
+                viewPendingDeliveries();
+                break;
+            case 3:
+                viewCompletedDeliveries();
+                break;
+            case 4:
+                markDeliveryCompleted();
+                break;
+            case 5:
+                printf("Returning to Main Menu...\n");
+                break;
+            default:
+                printf("Invalid choice! Please try again.\n");
+        }
+    } while (choice != 5);
+}
+
+void viewAllDeliveries() {
+    if (deliveryCount == 0) {
+        printf("no delivery records found.\n");
+        return;
+    }
+
+    printf("\n=== All Delivery Records (%d) ===\n\n", deliveryCount);
+    printf("%-12s %-20s %-10s %-15s %-10s\n",
+           "Delivery ID", "Route", "Weight", "Vehicle", "Status");
+    printf("------------------------------------------------------------\n");
+
+    for (int i = 0; i < deliveryCount; i++) {
+        char status[20];
+        if (deliveryCompleted[i]) {
+            strcpy(status, "Completed");
+        } else {
+            strcpy(status, "Pending");
+        }
+
+        printf("%-12d %s -> %-8s %-10d %-15s %-10s\n",
+               deliveryId[i],
+               cities[deliveryfromCity[i]],
+               cities[deliverytoCity[i]],
+               deliveryWeight[i],
+               vehicleTypes[deliveryVehicle[i]],
+               status);
+    }
+}
+
+void viewPendingDeliveries() {
+    if (deliveryCount == 0) {
+        printf("no delivery records found.\n");
+        return;
+    }
+
+    printf("\n=== Pending Deliveries ===\n\n");
+    int pendingCount = 0;
+    for (int i = 0; i < deliveryCount; i++) {
+        if (!deliveryCompleted[i]) {
+            printf("ID: %d | %s -> %s | Weight: %dkg | Vehicle: %s\n",
+                   deliveryId[i],
+                   cities[deliveryfromCity[i]],
+                   cities[deliverytoCity[i]],
+                   deliveryWeight[i],
+                   vehicleTypes[deliveryVehicle[i]]);
+            pendingCount++;
+        }
+    }
+
+    if (pendingCount == 0) {
+        printf("no pending deliveries.\n");
+    }
+}
+
+void viewCompletedDeliveries() {
+    if (deliveryCount == 0) {
+        printf("no delivery records found.\n");
+        return;
+    }
+
+    printf("\n=== Completed Deliveries ===\n\n");
+    int completedCount = 0;
+    for (int i = 0; i < deliveryCount; i++) {
+        if (deliveryCompleted[i]) {
+            printf("ID: %d | %s -> %s | Completed: %s | Actual Time: %.2f hours\n",
+                   deliveryId[i],
+                   cities[deliveryfromCity[i]],
+                   cities[deliverytoCity[i]],
+                   deliveryCompletionTime[i],
+                   deliveryActualTime[i]);
+            completedCount++;
+        }
+    }
+
+    if (completedCount == 0) {
+        printf("no completed deliveries.\n");
+    }
+}
+
+void markDeliveryCompleted() {
+    if (deliveryCount == 0) {
+        printf("no deliveries available.\n");
+        return;
+    }
+
+    int deliveryIdInput;
+    char time[20];
+    float actualTime;
+
+    printf("\nPending deliveries:\n");
+    viewPendingDeliveries();
+
+    printf("\nEnter delivery ID to mark as completed: ");
+    scanf("%d", &deliveryIdInput);
+    getchar();
+
+    printf("Enter completion time (e.g., 2025-10-24 23:48): "); //date and/or time when the delivery was completed
+    fgets(time, 20, stdin);
+    time[strlen(time)-1] = '\0';
+
+    printf("Enter actual delivery time (hours): "); //duration of the delivery in hours
+    scanf("%f", &actualTime);
+    getchar();
+
+    for (int i = 0; i < deliveryCount; i++) {
+        if (deliveryId[i] == deliveryIdInput && !deliveryCompleted[i]) {
+            deliveryCompleted[i] = 1;
+            strcpy(deliveryCompletionTime[i], time);
+            deliveryActualTime[i] = actualTime;
+            printf("Delivery marked as completed!\n");
+            return;
+        }
+    }
+
+    printf("Delivery not found or already completed!\n");
+}
+
 
