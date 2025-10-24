@@ -6,12 +6,14 @@
 #define NAME_LENGTH 50
 #define NUM_VEHICLES 3
 #define MAX_DELIVERIES 100
+#define FUEL_PRICE 310
 
 void mainMenu();
 void cityManagement();
 void distanceManagement();
 void vehicleManagement();
 void deliveryRequestHandling();
+void costTimeFuelCalculations();
 
 //city management functions
 void addCity();
@@ -31,6 +33,15 @@ void viewDistanceTable();
 void initializeVehicles();
 void displayVehicles();
 int selectVehicle();
+
+//delivery handling functions
+void processDelivery();
+void viewActiveDeliveries();
+
+//cost,time,fuel calculation
+void calculateDeliveryCost();
+void viewAllCalculations();
+void displayCalculationResults(int index);
 
 char cities[MAX_CITIES][NAME_LENGTH];
 int cityCount = 0;
@@ -52,6 +63,14 @@ int deliveryVehicle[MAX_DELIVERIES];
 int deliveryCompleted[MAX_DELIVERIES];
 char deliveryCompletionTime[MAX_DELIVERIES][20];
 float deliveryActualTime[MAX_DELIVERIES];
+
+float deliveryCost[MAX_DELIVERIES];
+float estimatedTime[MAX_DELIVERIES];
+float fuelUsed[MAX_DELIVERIES];
+float fuelCost[MAX_DELIVERIES];
+float totalCost[MAX_DELIVERIES];
+float profit[MAX_DELIVERIES];
+float customerCharge[MAX_DELIVERIES];
 
 int main()
 {
@@ -102,6 +121,7 @@ void mainMenu(){
                 break;
             case 5:
                 printf("\n--- Cost Time Fuel Calculations ---\n");
+                costTimeFuelCalculations();
                 break;
             case 6:
                 printf("\n--- Delivery Records ---\n");
@@ -645,3 +665,130 @@ void viewActiveDeliveries() {
         }
     }
 }
+
+// -------------------------- Cost, Time and Fuel Calculations ----------------------
+void costTimeFuelCalculations() {
+    int choice;
+    do {
+        printf(" \tMenu\n");
+        printf("1. Calculate cost for delivery\n");
+        printf("2. View all calculations\n");
+        printf("3. Back to Main Menu\n");
+        printf("Enter your choice (1-3): ");
+        scanf("%d", &choice);
+        getchar();
+
+        switch (choice) {
+            case 1:
+                calculateDeliveryCost();
+                break;
+            case 2:
+                viewAllCalculations();
+                break;
+            case 3:
+                printf("Returning to Main Menu...\n");
+                break;
+            default:
+                printf("Invalid choice! Please try again.\n");
+        }
+    } while (choice != 3);
+}
+
+void calculateDeliveryCost() {
+    if (deliveryCount == 0) {
+        printf("no deliveries available!\n");
+        return;
+    }
+
+    int deliveryChoice;
+    printf("\n Deliveries:\n");
+    viewActiveDeliveries();
+
+    printf("\nEnter delivery ID to calculate cost: ");
+    scanf("%d", &deliveryChoice);
+    getchar();
+
+    int deliveryIndex = -1;
+    for (int i = 0; i < deliveryCount; i++) {
+        if (deliveryId[i] == deliveryChoice && !deliveryCompleted[i]) {
+            deliveryIndex = i;
+            break;
+        }
+    }
+
+    if (deliveryIndex == -1) {
+        printf("Error: Delivery not found!\n");
+        return;
+    }
+
+    int fromCity = deliveryfromCity[deliveryIndex];
+    int toCity = deliverytoCity[deliveryIndex];
+    int weight = deliveryWeight[deliveryIndex];
+    int vehicleIndex = deliveryVehicle[deliveryIndex];
+    int distance = distances[fromCity][toCity];
+
+    int rate = vehicleRatePerKm[vehicleIndex];
+    int speed = vehicleAvgSpeed[vehicleIndex];
+    int efficiency = vehicleFuelEfficiency[vehicleIndex];
+
+    deliveryCost[deliveryIndex] = distance * rate * (1 + weight / 10000.0);
+    estimatedTime[deliveryIndex] = (float)distance / speed;
+    fuelUsed[deliveryIndex] = (float)distance / efficiency;
+    fuelCost[deliveryIndex] = fuelUsed[deliveryIndex] * FUEL_PRICE;
+    totalCost[deliveryIndex] = deliveryCost[deliveryIndex] + fuelCost[deliveryIndex];
+    profit[deliveryIndex] = deliveryCost[deliveryIndex] * 0.25;
+    customerCharge[deliveryIndex] = totalCost[deliveryIndex] + profit[deliveryIndex];
+
+    printf("\nCalculations completed!\n");
+    displayCalculationResults(deliveryIndex);
+}
+
+void displayCalculationResults(int index) {
+
+    int fromCity = deliveryfromCity[index];
+    int toCity = deliverytoCity[index];
+    int distance = distances[fromCity][toCity];
+
+    printf("\n======================================================\n");
+    printf("DELIVERY COST ESTIMATION\n");
+    printf("------------------------------------------------------\n");
+    printf("From: %s\n", cities[fromCity]);
+    printf("To: %s\n", cities[toCity]);
+    printf("Distance: %d km\n", distance);
+    printf("Vehicle: %s\n", vehicleTypes[deliveryVehicle[index]]);
+    printf("Weight: %d kg\n", deliveryWeight[index]);
+    printf("------------------------------------------------------\n");
+    printf("Base Cost: %.2f LKR\n", deliveryCost[index]);
+    printf("Fuel Used: %.2f L\n", fuelUsed[index]);
+    printf("Fuel Cost: %.2f LKR\n", fuelCost[index]);
+    printf("Total Cost: %.2f LKR\n", totalCost[index]);
+    printf("Profit: %.2f LKR\n", profit[index]);
+    printf("Customer Charge: %.2f LKR\n", customerCharge[index]);
+    printf("Estimated Time: %.2f hours\n", estimatedTime[index]);
+    printf("======================================================\n");
+}
+
+void viewAllCalculations() {
+    if (deliveryCount == 0) {
+        printf("no deliveries available.\n");
+        return;
+    }
+
+    printf("\n=== All Delivery Calculations ===\n\n");
+    printf("%-12s %-20s %-10s %-15s %-15s\n",
+           "Delivery ID", "Route", "Weight", "Total Cost", "Time (hrs)");
+    printf("------------------------------------------------------------\n");
+
+    for (int i = 0; i < deliveryCount; i++) {
+        if (customerCharge[i] > 0) {
+            printf("%-12d %s -> %-8s %-10d LKR %-11.2f %-14.2f\n",
+                   deliveryId[i],
+                   cities[deliveryfromCity[i]],
+                   cities[deliverytoCity[i]],
+                   deliveryWeight[i],
+                   customerCharge[i],
+                   estimatedTime[i]);
+        }
+    }
+}
+
