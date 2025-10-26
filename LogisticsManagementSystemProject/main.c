@@ -1412,26 +1412,79 @@ void loadData() {
         return;
     }
 
-    // Load cities
-    fscanf(file, "%d", &cityCount);
+    printf("Loading data from file...\n");
+
+    // ----- Load City Count -----
+    fscanf(file, "City count : %d\n", &cityCount);
+
+    // ----- Load Cities -----
+    fscanf(file, "Cities :\t");
     for (int i = 0; i < cityCount; i++) {
-        fscanf(file, "%s", cities[i]);
+        fgets(cities[i], NAME_LENGTH, file);
+        cities[i][strcspn(cities[i], "\n")] = '\0';
     }
 
-    // Load distances
+    char line[200];
+    while (fgets(line, sizeof(line), file)) {
+        if (strstr(line, "=== Distance Table ===")) break;
+    }
+
+    fgets(line, sizeof(line), file);
+
+    // ----- Load Distance Table -----
     for (int i = 0; i < cityCount; i++) {
+        fgets(line, sizeof(line), file);
+        char *token = strtok(line, " \t\n");
         for (int j = 0; j < cityCount; j++) {
-            fscanf(file, "%d", &distances[i][j]);
+            token = strtok(NULL, " \t\n");
+            if (token == NULL) break;
+            if (strcmp(token, "-") == 0)
+                distances[i][j] = -1;
+            else
+                distances[i][j] = atoi(token);
         }
     }
 
-    // Load deliveries
-    fscanf(file, "%d %d", &deliveryCount, &nextDeliveryId);  //fscanf -> read data from a file
+    // Skip until delivery section
+    while (fgets(line, sizeof(line), file)) {
+        if (strstr(line, "=== Delivery Records ===")) break;
+    }
+
+    fscanf(file, "Total Deliveries: %d, Next Delivery ID: %d\n", &deliveryCount, &nextDeliveryId);
+    fgetc(file); // consume newline
+
+    // ----- Load Deliveries -----
     for (int i = 0; i < deliveryCount; i++) {
-        fscanf(file, "%d %d %d %d %d %d %s %f",
-               &deliveryId[i], &deliveryfromCity[i], &deliverytoCity[i],
-               &deliveryWeight[i], &deliveryVehicle[i], &deliveryCompleted[i],
-               deliveryCompletionTime[i], &deliveryActualTime[i]);
+        fscanf(file, "Delivery ID       : %d\n", &deliveryId[i]);
+
+        char fromCity[NAME_LENGTH], toCity[NAME_LENGTH], completed[10], vehicle[NAME_LENGTH];
+        fscanf(file, "From              : %s\n", fromCity);
+        fscanf(file, "To                : %s\n", toCity);
+        fscanf(file, "Weight (kg)       : %d\n", &deliveryWeight[i]);
+        fscanf(file, "Vehicle           : %s\n", vehicle);
+        fscanf(file, "Completed?        : %s\n", completed);
+
+        deliveryfromCity[i] = searchCity(fromCity);
+        deliverytoCity[i] = searchCity(toCity);
+
+        // convert vehicle name back to index
+        deliveryVehicle[i] = 0;
+        for (int v = 0; v < NUM_VEHICLES; v++) {
+            if (strcmp(vehicle, vehicleTypes[v]) == 0) {
+                deliveryVehicle[i] = v;
+                break;
+            }
+        }
+
+        if (strcmp(completed, "Yes") == 0) {
+            deliveryCompleted[i] = 1;
+            fscanf(file, "Completion Time   : %s\n", deliveryCompletionTime[i]);
+            fscanf(file, "Actual Time (hrs) : %f\n", &deliveryActualTime[i]);
+        } else {
+            deliveryCompleted[i] = 0;
+        }
+
+        fgets(line, sizeof(line), file);
     }
 
     fclose(file);
