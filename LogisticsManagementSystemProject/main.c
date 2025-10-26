@@ -172,7 +172,7 @@ void mainMenu(){
                 performanceReports();
                 break;
             case 9:
-                printf("\nSaving data\n");
+                printf("\n data saved successfully\n");
                 saveData();
                 break;
             case 10:
@@ -563,10 +563,10 @@ void initializeVehicles() {
 void displayVehicles() {
     printf("\n    - Available Vehicles -\n\n");
     printf("Type       Capacity    Rate/km    Speed    Fuel Efficiency     Available \n");
-    printf("------------------------------------------------------------\n");
+    printf("--------------------------------------------------------------------------\n");
 
     for (int i = 0; i < NUM_VEHICLES; i++) {
-        printf("%-11s %-10d %-9d %-10d %-11d  %d/%d \n",
+        printf("%-11s %-10d %-9d %-10d %-11d  %8d/%d \n",
                vehicleTypes[i],
                vehicleCapacity[i],
                vehicleRatePerKm[i],
@@ -841,7 +841,7 @@ void viewAllCalculations() {
     printf("\n=== All Delivery Calculations ===\n\n");
     printf("%-12s %-20s %-10s %-15s %-15s\n",
            "Delivery ID", "Route", "Weight", "Total Cost", "Time (hrs)");
-    printf("------------------------------------------------------------\n");
+    printf("------------------------------------------------------------------\n");
 
     for (int i = 0; i < deliveryCount; i++) {
         if (customerCharge[i] > 0) {
@@ -1048,8 +1048,7 @@ void findLeastCostRoute() {
     }
     char fromCity[NAME_LENGTH], toCity[NAME_LENGTH];
 
-    printf("\n=== Find Least Cost Route ===\n");
-    printf("Available cities:\n");
+    printf("\nFind Least Cost Route : \n");
     displayCities();
 
     printf("\nEnter departure city: ");
@@ -1404,7 +1403,6 @@ for (int i = 0; i < deliveryCount; i++) {
 }
 
     fclose(file); //close the file when done
-    printf("Data saved successfully!\n");
 }
 
 void loadData() {

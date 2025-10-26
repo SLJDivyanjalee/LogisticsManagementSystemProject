@@ -1,31 +1,27 @@
-City count : 3
-Cities :	Padukka
-Nugegoda
-Godagama
-
+City count : 2
+Cities :	colombo
+gampaha
 === Distance Table ===
 
-               Padukka        Nugegoda       Godagama     
-Padukka        0              25             45                          
-Nugegoda       25             0              10                          
-Godagama       45             10             0                          
-          
+               colombo        gampaha        
+colombo        0              82             
+gampaha        82             0              
 === Delivery Records ===
 Total Deliveries: 2, Next Delivery ID: 3
 
 Delivery ID       : 1
-From              : Padukka
-To                : Nugegoda
-Weight (kg)       : 32
-Vehicle           : Van
-Completed?        : Yes
-Completion Time   : 2025-10-26
-Actual Time (hrs) : 23.20
------------------------------
-Delivery ID       : 2
-From              : Nugegoda
-To                : Padukka
-Weight (kg)       : 52
+From              : colombo
+To                : gampaha
+Weight (kg)       : 23
 Vehicle           : Van
 Completed?        : No
+-----------------------------
+Delivery ID       : 2
+From              : gampaha
+To                : colombo
+Weight (kg)       : 52
+Vehicle           : Truck
+Completed?        : Yes
+Completion Time   : 2025-10-27 14.23
+Actual Time (hrs) : 5.00
 -----------------------------
